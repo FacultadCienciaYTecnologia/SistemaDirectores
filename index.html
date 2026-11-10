@@ -120,7 +120,7 @@
                             <th>Director Actual</th>
                             <th>DUI</th>
                             <th>Teléfono</th>
-                            <th>Estado</th>
+                            <th>Correo</th>
                             <th class="admin-only" style="text-align: right;">Acciones</th>
                         </tr>
                     </thead>
@@ -282,6 +282,10 @@
                         <label>Teléfono</label>
                         <input type="text" id="nc-telefono" placeholder="Ej: 7777-7777">
                     </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="nc-correo" placeholder="Ej: director@clases.edu.sv">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" onclick="cerrarModal('modal-centro')">Cancelar</button>
@@ -343,7 +347,7 @@
                     </div>
                     <div class="input-group">
                         <label>Director Actual</label>
-                        <input type="text" id="edit-nc-director" required>
+                        <input type="text" id="edit-nc-director" placeholder="Nombre completo del director">
                     </div>
                     <div class="input-group">
                         <label>Número de DUI</label>
@@ -351,7 +355,11 @@
                     </div>
                     <div class="input-group">
                         <label>Teléfono</label>
-                        <input type="text" id="edit-nc-telefono">
+                        <input type="text" id="edit-nc-telefono" placeholder="Ej: 7777-7777">
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="edit-nc-correo" placeholder="Ej: director@clases.edu.sv">
                     </div>
                 </div>
                 <div class="modal-footer">

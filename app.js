@@ -180,8 +180,9 @@ function renderizarTabla() {
             <td style="font-weight: 500;">${d.directorActivo ? d.directorActivo.nombre : '<span style="color:var(--danger)">Sin Asignar</span>'}</td>
             <td>${d.directorActivo ? d.directorActivo.dui : '-'}</td>
             <td>${d.directorActivo && d.directorActivo.telefono ? `<a href="tel:${d.directorActivo.telefono}" style="color: var(--accent); text-decoration: none;">${d.directorActivo.telefono}</a>` : '-'}</td>
-            <td>${d.directorActivo ? d.directorActivo.correo : '-'}</td>
+            <td>${d.directorActivo && d.directorActivo.correo ? d.directorActivo.correo : '-'}</td>
             <td class="admin-only" style="text-align: right; display: ${isAdmin ? 'table-cell' : 'none'};">
+                <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" onclick="abrirModalEditarCentro(${d.codigo_infraestructura})">Editar</button>
                 <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" onclick="verHistorial(${d.codigo_infraestructura})">Historial</button>
                 <button class="btn-primary" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" onclick="abrirModalCambioDirector(${d.codigo_infraestructura})">Cambiar Dir.</button>
                 <button class="btn-secondary" style="padding: 4px 8px; font-size: 12px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="eliminarCentro(${d.codigo_infraestructura})">Eliminar</button>
@@ -459,7 +460,7 @@ async function registrarCentro() {
                 nombre: dirNombre,
                 dui: document.getElementById('nc-dui').value,
                 telefono: document.getElementById('nc-telefono').value,
-                correo: '',
+                correo: document.getElementById('nc-correo').value.trim(),
                 fecha_inicio: new Date().toISOString().split('T')[0],
                 fecha_fin: null,
                 estado: 'Activo'
@@ -712,6 +713,7 @@ function abrirModalEditarCentro(codigo) {
     document.getElementById('edit-nc-director').value = dir ? dir.nombre : '';
     document.getElementById('edit-nc-dui').value = dir ? dir.dui : '';
     document.getElementById('edit-nc-telefono').value = dir ? dir.telefono : '';
+    document.getElementById('edit-nc-correo').value = dir ? (dir.correo || '') : '';
 
     document.getElementById('modal-editar-centro').classList.add('active');
 }
@@ -736,15 +738,20 @@ async function editarCentro() {
             
         if (errEscuela) throw errEscuela;
 
-        // 2. Actualizar director si hay uno activo
+        // 2. Actualizar director activo, o agregarlo si la escuela no tiene uno
         const dataOld = allData.find(d => d.codigo_infraestructura === codigo);
+        const dirNombre = document.getElementById('edit-nc-director').value.trim();
+        const dirDui = document.getElementById('edit-nc-dui').value;
+        const dirTelefono = document.getElementById('edit-nc-telefono').value;
+        const dirCorreo = document.getElementById('edit-nc-correo').value.trim();
+
         if (dataOld && dataOld.directorActivo) {
             const idDir = dataOld.directorActivo.id;
             const datosDirector = {
-                nombre: document.getElementById('edit-nc-director').value,
-                dui: document.getElementById('edit-nc-dui').value,
-                telefono: document.getElementById('edit-nc-telefono').value,
-                correo: dataOld.directorActivo.correo,
+                nombre: dirNombre || dataOld.directorActivo.nombre,
+                dui: dirDui,
+                telefono: dirTelefono,
+                correo: dirCorreo,
                 fecha_inicio: dataOld.directorActivo.fecha_inicio,
                 fecha_fin: dataOld.directorActivo.fecha_fin,
                 estado: dataOld.directorActivo.estado
@@ -755,6 +762,24 @@ async function editarCentro() {
                 .update({ datos_cifrados: directorCifrado })
                 .eq('id', idDir);
                 
+            if (errDir) throw errDir;
+        } else if (dirNombre) {
+            const datosDirector = {
+                nombre: dirNombre,
+                dui: dirDui,
+                telefono: dirTelefono,
+                correo: dirCorreo,
+                fecha_inicio: new Date().toISOString().split('T')[0],
+                fecha_fin: null,
+                estado: 'Activo'
+            };
+            const directorCifrado = encriptarDatos(datosDirector);
+
+            const { error: errDir } = await dbClient.from('directores_cifrados').insert({
+                codigo_escuela: codigo,
+                datos_cifrados: directorCifrado
+            });
+
             if (errDir) throw errDir;
         }
 
